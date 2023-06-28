@@ -13,7 +13,7 @@ namespace SysProg__EXAM
         /// </summary>
         private const int maxLenghtPass = 4;
 
-        private const int minLenghtPass = 3;
+        private const int minLenghtPass = 2;
 
         /// <summary>
         /// Переменная для хранения пароля который успешно подобран
@@ -28,30 +28,33 @@ namespace SysProg__EXAM
 
         private static void SravniPass(string password) 
         {
-                if (password == "156q")
-                    realPassword = password;
-                else
-                    return;
+            if (password == "156q")
+            {
+                realPassword = password;
+                TryCheckPassword(realPassword);
+            }
+            else
+                return;
         }
 
 
         static void Main(string[] args)
         {
 
-            //Stopwatch sw = new Stopwatch();
-            //sw.Start();
-            //GeneratePass();
-            //sw.Stop();
+            Stopwatch sw = new Stopwatch();
+            sw.Start();
+            GeneratePass();
+            sw.Stop();
 
-            //Console.ForegroundColor = ConsoleColor.Green;
-            //Console.WriteLine("Выполнение опараций АСИНХРОННО");
-            //Console.WriteLine($"Реальный пароль: {realPassword}");
-            //Console.WriteLine($"Затрачено времени {sw.Elapsed.TotalSeconds} сек.");
-            //Console.ResetColor();
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine("Выполнение опараций АСИНХРОННО");
+            Console.WriteLine($"Реальный пароль: {realPassword}");
+            Console.WriteLine($"Затрачено времени {sw.Elapsed.TotalSeconds} сек.");
+            Console.ResetColor();
 
 
-            //realPassword = "";
-            //Console.WriteLine();
+            realPassword = "";
+            Console.WriteLine();
 
             Stopwatch sw2 = new Stopwatch();
             sw2.Start();
@@ -99,7 +102,7 @@ namespace SysProg__EXAM
                 process.Start();
                 realPassword = pass.ToString();
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 //Console.WriteLine(pass.ToString());
                 //Console.WriteLine(ex.Message);
@@ -120,7 +123,6 @@ namespace SysProg__EXAM
                     Task.Run(() => { PassGenerateOneMore(pass1generation); })
                     );
 
-                ////tasks.Add(Task.Factory.StartNew(() => PassGenerateOneMore(pass1generation)));
             }
             Task.WaitAll(tasks.ToArray());
         }
@@ -134,7 +136,7 @@ namespace SysProg__EXAM
             {
                 string pass1generation = allPossibleSymbol[i].ToString();
 
-                Task t = new Task(() => PassGenerateOneMore(pass1generation));
+                Task t = new Task(() => PassGenerateOneMoreSync(pass1generation));
                 tasks.Add(t);
                 t.RunSynchronously();
 
@@ -199,9 +201,9 @@ namespace SysProg__EXAM
 
             //Console.WriteLine(pass);
 
-            TryCheckPassword(pass);
+            //TryCheckPassword(pass);
 
-            //SravniPass(pass.ToString());
+            SravniPass(pass.ToString());
 
             ///"Ручной тормоз" если пароль подобран то остановить порождение потоков
             //if (realPassword.Length > 0)
@@ -218,11 +220,11 @@ namespace SysProg__EXAM
             {
                 string passNextDepth = pass.ToString() + allPossibleSymbol[i].ToString();
 
-                //if (passNextDepth.Length >= minLenghtPass)
-                //    SravniPass(passNextDepth);
-
                 if (passNextDepth.Length >= minLenghtPass)
-                    TryCheckPassword(passNextDepth);
+                    SravniPass(passNextDepth);
+
+                //if (passNextDepth.Length >= minLenghtPass)
+                //    TryCheckPassword(passNextDepth);
 
                 ///"Ручной тормоз" если пароль подобран то остановить порождение потоков
                 if (realPassword.Length < 0 || passNextDepth.Length <= maxLenghtPass)
@@ -230,7 +232,6 @@ namespace SysProg__EXAM
                     Task task = Task.Factory.StartNew(() => PassGenerateOneMore(passNextDepth));
 
                     _activeTaskList.Add(task);
-
                 }
 
 
@@ -250,9 +251,9 @@ namespace SysProg__EXAM
 
             //Console.WriteLine(pass);
 
-            TryCheckPassword(pass);
+            //TryCheckPassword(pass);
 
-            //SravniPass(pass.ToString());
+            SravniPass(pass.ToString());
 
             ///"Ручной тормоз" если пароль подобран то остановить порождение потоков
             //if (realPassword.Length > 0)
@@ -269,17 +270,19 @@ namespace SysProg__EXAM
             {
                 string passNextDepth = pass.ToString() + allPossibleSymbol[i].ToString();
 
-                //if (passNextDepth.Length >= minLenghtPass)
-                //    SravniPass(passNextDepth);
-
                 if (passNextDepth.Length >= minLenghtPass)
-                    TryCheckPassword(passNextDepth);
+                    SravniPass(passNextDepth);
+
+                //if (passNextDepth.Length >= minLenghtPass)
+                //{
+                //    TryCheckPassword(passNextDepth);
+                //}
 
                 ///"Ручной тормоз" если пароль подобран то остановить порождение потоков
                 if (realPassword.Length < 0 || passNextDepth.Length <= maxLenghtPass)
                 {
                     Task task = new Task( () => PassGenerateOneMoreSync(passNextDepth));
-
+                    
                     task.RunSynchronously();
                     _activeTaskList.Add(task);
 
