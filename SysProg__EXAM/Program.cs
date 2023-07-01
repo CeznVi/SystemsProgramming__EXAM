@@ -13,6 +13,9 @@ namespace SysProg__EXAM
         /// </summary>
         private const int maxLenghtPass = 4;
 
+        /// <summary>
+        /// Минимальная длина пароля
+        /// </summary>
         private const int minLenghtPass = 2;
 
         /// <summary>
@@ -25,8 +28,13 @@ namespace SysProg__EXAM
         /// </summary>
         private const string allPossibleSymbol = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*_";
 
-
-        private static void SravniPass(string password) 
+        /// <summary>
+        /// Метод для проверки пароля. Из за особености Windows и невозможности 
+        /// проверять пароль с помомощью метода TryCheckPassword так как 
+        /// система блокирует третью попытку пришлось прибегнуть к методу прослойке.
+        /// </summary>
+        /// <param name="password"></param>
+        private static void ComparePassword(string password) 
         {
             if (password == "156q")
             {
@@ -67,8 +75,6 @@ namespace SysProg__EXAM
             Console.WriteLine($"Затрачено времени {sw2.Elapsed.TotalSeconds} сек.");
             Console.ResetColor();
 
-
-
         }
 
 
@@ -108,8 +114,9 @@ namespace SysProg__EXAM
                 //Console.WriteLine(ex.Message);
             }
         }
-
-
+        /// <summary>
+        /// Сгенерировать первую часть пароля (1 символ) АСИНХРОННО
+        /// </summary>
         public static void GeneratePass()
         {
             List<Task> tasks = new List<Task>();
@@ -127,10 +134,12 @@ namespace SysProg__EXAM
             Task.WaitAll(tasks.ToArray());
         }
 
+        /// <summary>
+        /// Сгенерировать первую часть пароля (1 символ) СИНХРОННО
+        /// </summary>
         private static void GeneratePassSync()
         {
             List<Task> tasks = new List<Task>();
-
 
             for (int i = 0; i < allPossibleSymbol.Length; i++)
             {
@@ -144,70 +153,18 @@ namespace SysProg__EXAM
             Task.WaitAll(tasks.ToArray());
         }
 
-
-
         /// <summary>
-        /// Метод который порождает генарацию потоков и осуществляет подбор пароля
+        /// Рекурсионный метод генерации 2 и последующих символов АСИНХРОННО
         /// </summary>
         /// <param name="pass"></param>
-        //public async static void PassGenerateOneMore(object pass)
-        //{
-        //    if (realPassword.Length > 0 || pass.ToString().Length > maxLenghtPass)
-        //        return;
-
-        //    //Console.WriteLine(pass);
-
-        //    //TryCheckPassword(pass);
-
-        //    //SravniPass(pass.ToString());
-
-        //    ///"Ручной тормоз" если пароль подобран то остановить порождение потоков
-        //    if (realPassword.Length > 0)
-        //        return;
-
-        //    //// "ручной тормоз" останавливает подбор паролей в случае привышения МАКС. длины пароля
-        //    if (pass.ToString().Length >= maxLenghtPass)
-        //        return;
-
-        //    for (int i = 0; i < allPossibleSymbol.Length; i++)
-        //    {
-        //        string passNextDepth = pass.ToString() + allPossibleSymbol[i].ToString();
-
-
-        //        if (passNextDepth.Length >= minLenghtPass)
-        //            SravniPass(passNextDepth);
-
-        //        //if (passNextDepth.Length >= minLenghtPass)
-        //        //    TryCheckPassword(passNextDepth);
-
-
-        //        ///"Ручной тормоз" если пароль подобран то остановить порождение потоков
-        //        if (realPassword.Length < 0 || passNextDepth.Length <= maxLenghtPass)
-        //            await Task.Run(() => PassGenerateOneMore(passNextDepth));
-        //        else
-        //            break;
-
-        //    }
-
-        //}
-
-
-
         public static void PassGenerateOneMore(object pass)
         {
 
+            ///"Ручной тормоз" если пароль подобран то остановить порождение потоков
             if (realPassword.Length > 0 || pass.ToString().Length > maxLenghtPass)
                 return;
 
-            //Console.WriteLine(pass);
-
-            //TryCheckPassword(pass);
-
-            SravniPass(pass.ToString());
-
-            ///"Ручной тормоз" если пароль подобран то остановить порождение потоков
-            //if (realPassword.Length > 0)
-            //    return;
+            ComparePassword(pass.ToString());
 
             //// "ручной тормоз" останавливает подбор паролей в случае привышения МАКС. длины пароля
             if (pass.ToString().Length >= maxLenghtPass)
@@ -221,10 +178,7 @@ namespace SysProg__EXAM
                 string passNextDepth = pass.ToString() + allPossibleSymbol[i].ToString();
 
                 if (passNextDepth.Length >= minLenghtPass)
-                    SravniPass(passNextDepth);
-
-                //if (passNextDepth.Length >= minLenghtPass)
-                //    TryCheckPassword(passNextDepth);
+                    ComparePassword(passNextDepth);
 
                 ///"Ручной тормоз" если пароль подобран то остановить порождение потоков
                 if (realPassword.Length < 0 || passNextDepth.Length <= maxLenghtPass)
@@ -233,31 +187,25 @@ namespace SysProg__EXAM
 
                     _activeTaskList.Add(task);
                 }
-
-
             }
             if (realPassword.Length > 0)
                 return;
 
             Task.WaitAll(_activeTaskList.ToArray());
-
         }
-
+        
+        /// <summary>
+        /// Рекурсионный метод генерации 2 и последующих символов СИНХРОННО
+        /// </summary>
+        /// <param name="pass"></param>
         public static void PassGenerateOneMoreSync(object pass)
         {
 
+            ///"Ручной тормоз" если пароль подобран то остановить порождение потоков
             if (realPassword.Length > 0 || pass.ToString().Length > maxLenghtPass)
                 return;
 
-            //Console.WriteLine(pass);
-
-            //TryCheckPassword(pass);
-
-            SravniPass(pass.ToString());
-
-            ///"Ручной тормоз" если пароль подобран то остановить порождение потоков
-            //if (realPassword.Length > 0)
-            //    return;
+            ComparePassword(pass.ToString());
 
             //// "ручной тормоз" останавливает подбор паролей в случае привышения МАКС. длины пароля
             if (pass.ToString().Length >= maxLenghtPass)
@@ -265,36 +213,26 @@ namespace SysProg__EXAM
 
             List<Task> _activeTaskList = new List<Task>();
 
-
             for (int i = 0; i < allPossibleSymbol.Length; i++)
             {
                 string passNextDepth = pass.ToString() + allPossibleSymbol[i].ToString();
 
                 if (passNextDepth.Length >= minLenghtPass)
-                    SravniPass(passNextDepth);
-
-                //if (passNextDepth.Length >= minLenghtPass)
-                //{
-                //    TryCheckPassword(passNextDepth);
-                //}
+                    ComparePassword(passNextDepth);
 
                 ///"Ручной тормоз" если пароль подобран то остановить порождение потоков
                 if (realPassword.Length < 0 || passNextDepth.Length <= maxLenghtPass)
                 {
                     Task task = new Task( () => PassGenerateOneMoreSync(passNextDepth));
-                    
                     task.RunSynchronously();
                     _activeTaskList.Add(task);
-
                 }
-
-
             }
+
             if (realPassword.Length > 0)
                 return;
 
             Task.WaitAll(_activeTaskList.ToArray());
-
         }
 
     }
